@@ -5,7 +5,7 @@
 - Scope: full roadmap — local v0.1 to v1.0 and streaming Phases 1 to 4
 - Test framework: gdUnit4 on Godot 4
 - Audience: maintainers and external contributors
-- Status: Draft v1.0 · 14 November 2026
+- Status: Draft v1.1 · 15 November 2026
 
 ---
 
@@ -121,7 +121,7 @@ Every test carries a stable identifier used in code review, milestone exit crite
 | MS-CORE-nnn | Seat manager, seat lifecycle, session state | v0.1 |
 | MS-DISP-nnn | Display compositor, screen assignment, window placement | v0.1 |
 | MS-IN-nnn | Input isolation and device-to-seat routing | v0.1 |
-| MS-PRIV-nnn | Privacy and fairness layer, information isolation | v0.3 |
+| MS-PRIV-nnn | Privacy and fairness layer, information isolation | v0.3 (seeded v0.1) |
 | MS-NET-nnn | Dedicated-server netcode and world replication | Streaming Phase 1 |
 | MS-STR-nnn | Capture, encoding and streaming pipeline | Streaming Phase 2 |
 | MS-BENCH-nnn | Automated rendering benchmarks with CSV output | Milestone 0 |
@@ -170,7 +170,7 @@ Continuous integration is organised around the layer model: the pull-request gat
 | soak | LAN, real clients | L4 session of 2+ hours, logs uploaded | Manual start | Release gate |
 | release | Full matrix | All pipelines + all MS-MAN episodes re-run and recorded | As needed | Release gate |
 
-The pull-request workflow uses the official action. Input names follow the gdUnit4-action README; pin the action and Godot versions explicitly once the project picks its baseline.
+The pull-request workflow uses the official action with every version pinned: action `@v1.4.2`, Godot 4.3, and `version: installed` so CI exercises the vendored gdUnit4 rather than downloading the latest release, whose newer majors drop support for the pinned Godot baseline. Input names follow the gdUnit4-action README.
 
 **Listing 2:** Pull-request gate using the official gdUnit4 action
 
@@ -183,12 +183,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: godot-gdunit-labs/gdUnit4-action@v1
+      - uses: godot-gdunit-labs/gdUnit4-action@v1.4.2
         with:
-          godot-version: "4.3"   # pin to project baseline
+          godot-version: "4.3"
+          version: "installed"   # run the vendored gdUnit4, not the latest
           paths: "res://test/unit,res://test/integration"
           headless: true
 ```
+
+One property of the runner must be fenced by policy rather than trusted: gdUnit4 exits 0 when no test cases are discovered, so a suite that fails to parse, or a path that matches nothing, is indistinguishable from a pass - and the behaviour persists in current framework releases. Every CI invocation of the runner therefore enforces its own discovery. Direct invocations go through the wrapper `test/run_tests.sh`, which fails when no suite executes or when any `*_test.gd` in the tree is missing from the executed set, naming the offending path. The pr pipeline invokes the action's internal runner directly and cannot be wrapped, so it carries an equivalent follow-up step asserting, against the action's JUnit report, that every `*_test.gd` appears as a suite with at least one testcase. A green badge must mean that tests ran.
 
 ### 4.4 Contributor Workflow and PR Gates
 
@@ -505,7 +508,7 @@ The matrix ties each engine system to the layers and identifiers that verify it 
 | Display compositor | MS-DISP-001, 002, 003 | MS-BENCH-001 to 003, MS-DISP-004 (L3 window placement) | v0.1 / v0.2 |
 | Input isolation | MS-IN-001 to 005 | MS-MAN-002 hot-plug episode | v0.1 |
 | Shared simulation | MS-NET-002 determinism | MS-BENCH-003 four-view load | v0.1 |
-| Privacy and fairness layer | MS-PRIV-001 to 005 | MS-MAN-003 HUD pairing episode | v0.3 |
+| Privacy and fairness layer | MS-PRIV-001 to 005 | MS-MAN-003 HUD pairing episode | v0.3 (seeded v0.1) |
 | Dedicated-server netcode | MS-NET-001, 003, 004 | L4 LAN soak | Phase 1 |
 | Streaming pipeline | MS-STR-003, 006 | MS-STR-001, 002, 004, 005, MS-MAN-004 | Phases 2-3 |
 | Hybrid orchestration | MS-STR-007, MS-NET-005 (migration) | MS-STR-008 fairness soak | Phase 4 |
@@ -513,7 +516,7 @@ The matrix ties each engine system to the layers and identifiers that verify it 
 
 ## 8. Risk-Based Test Priorities
 
-Test effort follows risk, and this register is the sequencing argument for the whole plan. The four highest risks are already known from platform research; each is paired with the verification that either retires it or escalates it. The escalation rule repeats the fork corollary of Section 2: an engine-level workaround or fork becomes discussable only when the paired check has actually failed on target hardware and the evidence sits in `test-reports`.
+Test effort follows risk, and this register is the sequencing argument for the whole plan. R1 to R8 were known from platform research before the first commit; R9 joined from implementation experience when the runner's zero-test exit code surfaced. Each is paired with the verification that either retires it or escalates it. The escalation rule repeats the fork corollary of Section 2: an engine-level workaround or fork becomes discussable only when the paired check has actually failed on target hardware and the evidence sits in `test-reports`.
 
 **Table 16:** Risk register with verification pairing
 
@@ -527,8 +530,9 @@ Test effort follows risk, and this register is the sequencing argument for the w
 | R6 | Headless server cannot render; streaming needs a separate rendering runtime | Medium | Architecture constraint accepted; Phase 2 build matrix includes the rendering runtime from day one |
 | R7 | Hardware encoder concurrency limits vary by GPU and driver | Medium | MS-STR-005 probe measures instead of assuming; guidance published per reference GPU |
 | R8 | Wi-Fi bandwidth and jitter break streamed seats in real homes | Medium | MS-MAN-004 blind perceptual episode wired vs Wi-Fi; docs declare a wired LAN requirement if warranted |
+| R9 | Test runner exits 0 when no test cases are discovered, so a broken suite or a mistyped path reports green | High | Wrapper `test/run_tests.sh` enforces per-suite discovery on every direct invocation; the pr pipeline cross-checks the action's JUnit report for every `*_test.gd` suite; the first live CI run must confirm the report location (outstanding) |
 
-Priorities translate directly into test order: R1 is why the spike is milestone zero, R2 is why the input router refuses keyboards by contract, and R4 is why quality scaling is designed in v0.4 while its measurement starts at v0.2. Any new risk enters this table through a pull request, under the same evidence rule.
+Priorities translate directly into test order: R1 is why the spike is milestone zero, R2 is why the input router refuses keyboards by contract, and R4 is why quality scaling is designed in v0.4 while its measurement starts at v0.2. R9 is why every CI invocation must prove it discovered the suites it claims to have run. Any new risk enters this table through a pull request, under the same evidence rule - R9 itself arrived that way, with the failing scenarios attached.
 
 ## 9. Hardware Test Protocol: Automated and Manual
 
@@ -560,6 +564,8 @@ func _process(delta: float) -> void:
 ```
 
 The analysis script (`analyze_frame_times.py`) is plain Python with no Godot dependency, reads the CSV, applies the threshold table and exits non-zero on failure so CI can gate on it. Thresholds are declared per scenario; the initial values come from the milestone 0 definition: at least 58 fps average per window and p99 frame time at or under 20 ms for two-window scenarios at 1080p.
+
+The repository also carries a rig-day runbook, `docs/rig_day.md`, which sequences the milestone 0 evidence run end to end - both monitor-pair captures, the analyzer gates, the MS-MAN-001 episode and the same-day fallback decision - under the standing rule that evidence captures always run at full duration: the flag that shortens a benchmark exists for smoke tests only.
 
 ### 9.2 Manual Episodes and Checklists
 
