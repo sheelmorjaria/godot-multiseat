@@ -1,0 +1,24 @@
+# Pull-request gate (plan Section 4.3, Table 4, pipeline "pr").
+# Runs the cheap, deterministic layers only: L1 unit + L2 integration,
+# headless via the official gdUnit4 action. Budget: 10 minutes; merge is
+# blocked on failure. L3/L4 hardware verification runs on the nightly
+# self-hosted runner (nightly.yml), never here.
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  unit-and-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: godot-gdunit-labs/gdUnit4-action@v1.4.2
+        with:
+          godot-version: "4.3"          # pinned to the project baseline
+          version: "installed"          # use the gdUnit4 v5.1.1 vendored in addons/
+          paths: "test/unit,test/integration"
+          headless: true
+          # gdUnit4 v5.x refuses headless runs unless explicitly acknowledged;
+          # the L1/L2 suites are pure logic and safe without a display server.
+          arguments: "--ignoreHeadlessMode"

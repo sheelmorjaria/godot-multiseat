@@ -1,0 +1,17 @@
+# Godot generated files
+.godot/
+*.translation
+
+# Export / build output
+build/
+export.cfg
+
+# Editor and OS noise
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# Local scratch runs of the benchmark scenes (recorded results are committed
+# under test-reports/<build-hash>/ by intent, see test-reports/README.md)
+/tmp/

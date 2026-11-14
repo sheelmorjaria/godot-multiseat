@@ -1,0 +1,52 @@
+# Nightly benchmark pipeline (plan Section 4.3, Table 4, pipeline "nightly").
+# Runs on the self-hosted runner with a GPU and the two benchmark displays
+# (same-refresh and mixed-refresh pairs; see docs/testing.md for the rig).
+# Produces CSV artifacts under test-reports/ and gates on the threshold
+# table via analyze_frame_times.py. Advisory for ordinary regressions,
+# blocking for milestone exits (MS-BENCH-001/002).
+#
+# Runner requirements (documented in docs/testing.md):
+#   - labels: [self-hosted, gpu, multiseat-displays]
+#   - `godot` (4.3-stable) and `python3` (>= 3.9) on PATH
+#   - both benchmark monitors connected
+name: nightly
+
+on:
+  schedule:
+    - cron: "23 2 * * *"   # nightly, off the busy round minutes
+  workflow_dispatch:        # manual trigger for milestone exits
+
+jobs:
+  frame-pacing-benchmark:
+    runs-on: [self-hosted, gpu, multiseat-displays]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "MS-BENCH-001: same-refresh pair (or MS-BENCH-002 mixed-refresh; set via input)"
+        run: |
+          BUILD_ID="${GITHUB_SHA::12}-$(date -u +%Y%m%d-%H%M%S)"
+          OUT_DIR="test-reports/${BUILD_ID}"
+          mkdir -p "${OUT_DIR}"
+          echo "OUT_DIR=${OUT_DIR}" >> "$GITHUB_ENV"
+          # The scenario is defined by the physical monitor pair attached to
+          # the runner; record which rig was used in the run metadata.
+          godot --path . res://test/bench/bench_frame_pacing.tscn \
+              ++ --csv="${OUT_DIR}/frame_times.csv" \
+              ++ --scenario="${NIGHTLY_SCENARIO:-same-refresh-1080p}"
+
+      - name: "Analyze frame times against the Section 6.1 thresholds"
+        run: |
+          python3 test/bench/analyze_frame_times.py \
+              --csv "${OUT_DIR}/frame_times.csv" \
+              --label "${NIGHTLY_SCENARIO:-same-refresh-1080p}" \
+              --refresh-hz "${NIGHTLY_REFRESH_HZ:-60}" \
+              --min-fps 58 --max-p99-ms 20.0
+
+      - name: "Upload CSV artifact and trend sample"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frame-times-${{ github.run_id }}
+          path: test-reports/
+          if-no-files-found: warn
