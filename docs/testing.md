@@ -34,13 +34,13 @@ GODOT_BIN=/path/to/godot test/run_tests.sh     # if godot is not on PATH
 The wrapper runs the same gdUnit4 command-line tool CI runs:
 
 ```bash
-godot --headless --path . -s -d res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
+godot --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
     -a test/unit -a test/integration -c --ignoreHeadlessMode
 ```
 
-and adds one guard the tool lacks in v5.1.1: a run that discovers **zero**
-test cases fails instead of exiting green — otherwise a rename that breaks
-every suite's parse would show a passing build while running nothing.
+(no `-d`: the debug flag makes the script debugger break on parse errors
+and wait for stdin that never arrives in CI, hanging the run), and adds
+the honesty contract the tool lacks in v5.1.1 — see below.
 
 - `-a <dir>` adds a test directory; `-c` continues after failures so one red
   suite does not hide the rest.
@@ -50,6 +50,33 @@ every suite's parse would show a passing build while running nothing.
 
 Benchmark scenes need a display and are never required for ordinary pull
 requests (plan Section 10.1); see *Benchmarks* below.
+
+## The honesty guard
+
+gdUnit4 v5.1.1 — and upstream still, as reported against 6.2.1 — exits 0
+when a run discovers no test cases, for example when suites fail to parse.
+A green badge can therefore hide a run of nothing, and the plan's
+red-test-on-main workflow (Section 4.4) would be invisible. `test/run_tests.sh`
+enforces the contract:
+
+- **H1** the tool's own exit code is honoured;
+- **H2** zero discovered test cases fails the run;
+- **H3** every `*_test.gd` under each scanned `-a` path must appear as
+  executed — only `Run Test Suite:` report lines count, because parse-error
+  lines also carry the suite's `res://` path and would mask exactly the
+  suite they prove broken;
+- **H4** any `Failed to load script` under `res://test/` fails the run.
+
+**Rule for CI:** every pipeline that invokes gdUnit4 runs behind this
+contract; there is no third way to run the suite in CI. `nightly.yml` calls
+the wrapper directly. The pr pipeline uses the official gdUnit4-action,
+whose internal runner cannot be wrapped, so `pr.yml` verifies the same
+H2/H3 properties against the action's own JUnit XML report in a follow-up
+step. The XML guard's key is `(testsuite/@name, @package)` where `name` is
+the file stem *including* `_test` — verified against the real report
+format. The first real GitHub run must still be watched to confirm the
+action's report location matches the guard's glob (no remote is configured
+yet, so this confirmation is outstanding).
 
 ## Suite layout and identifiers
 

@@ -22,3 +22,42 @@ jobs:
           # gdUnit4 v5.x refuses headless runs unless explicitly acknowledged;
           # the L1/L2 suites are pure logic and safe without a display server.
           arguments: "--ignoreHeadlessMode"
+
+      # The action's internal runner cannot be wrapped in test/run_tests.sh,
+      # so the honesty contract (H2 zero-testcases, H3 per-suite discovery)
+      # is verified here against the action's own JUnit XML report:
+      # every *_test.gd under the scanned paths must appear as a testsuite
+      # (name = file stem, package = directory) and at least one testcase
+      # must exist. Without this, suites that fail to parse are silently
+      # skipped with a green badge (gdUnit4 exits 0; unfixed upstream in
+      # 6.2.1). See docs/testing.md, "The honesty guard".
+      - name: "Honesty guard: fail unless every suite reported"
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, os, sys
+          import xml.etree.ElementTree as ET
+          expected = {}
+          for d in ("test/unit", "test/integration"):
+              for root, _, files in os.walk(d):
+                  for f in files:
+                      if f.endswith("_test.gd"):
+                          expected[(f[:-len(".gd")], root.replace(os.sep, "/"))] = os.path.join(root, f)
+          ran, cases = set(), 0
+          reports = glob.glob("reports/**/*.xml", recursive=True)
+          for path in reports:
+              for ts in ET.parse(path).getroot().iter("testsuite"):
+                  ran.add((ts.get("name"), (ts.get("package") or "").replace(os.sep, "/")))
+                  cases += sum(1 for _ in ts.iter("testcase"))
+          print(f"reports: {reports or 'NONE FOUND'}")
+          print(f"suites expected {len(expected)}, reported {len(ran)}, test cases {cases}")
+          failed = False
+          for key, f in sorted(expected.items()):
+              if key not in ran:
+                  print(f"FAIL: {f} produced no report entry (failed to parse?)", file=sys.stderr)
+                  failed = True
+          if cases == 0:
+              print("FAIL: zero test cases reported — a green run of nothing", file=sys.stderr)
+              failed = True
+          sys.exit(1 if failed else 0)
+          PY

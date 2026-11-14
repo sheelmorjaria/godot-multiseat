@@ -23,6 +23,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Every CI invocation of gdUnit4 runs behind the honesty contract in
+      # test/run_tests.sh (docs/testing.md). This also catches runner-class
+      # breakage on the self-hosted machine before the GPU benchmark starts.
+      - name: "L1 + L2 sanity through test/run_tests.sh"
+        run: test/run_tests.sh
+
       - name: "MS-BENCH-001: same-refresh pair (or MS-BENCH-002 mixed-refresh; set via input)"
         run: |
           BUILD_ID="${GITHUB_SHA::12}-$(date -u +%Y%m%d-%H%M%S)"
