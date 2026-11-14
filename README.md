@@ -12,6 +12,7 @@ is in place; running it needs the benchmark rig.
 
 - Roadmap and TDD plan: [`Godot_MultiSeat_TDD_Plan.md`](Godot_MultiSeat_TDD_Plan.md)
 - Contributor testing guide: [`docs/testing.md`](docs/testing.md)
+- Milestone 0 exit runbook (rig day): [`docs/rig_day.md`](docs/rig_day.md)
 - Recorded evidence: [`test-reports/`](test-reports/)
 
 ## Quick start

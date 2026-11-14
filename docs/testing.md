@@ -150,7 +150,9 @@ python3 test/bench/analyze_frame_times.py --csv <csv> --refresh-hz 60 \
 User arguments after `++` are read by the scene, not by Godot. Stutter is
 defined as a frame longer than 1.5x the refresh interval. Thresholds are
 declared in the plan before runs and relaxed only by pull request with
-evidence attached.
+evidence attached. The full milestone 0 exit procedure — both monitor
+pairs, the episode, and the same-day fallback decision — is the
+[rig-day runbook](rig_day.md).
 
 ## Manual episodes (Track B, MS-MAN-*)
 
