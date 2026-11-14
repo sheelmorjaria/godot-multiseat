@@ -32,8 +32,7 @@ jobs:
           # The scenario is defined by the physical monitor pair attached to
           # the runner; record which rig was used in the run metadata.
           godot --path . res://test/bench/bench_frame_pacing.tscn \
-              ++ --csv="${OUT_DIR}/frame_times.csv" \
-              ++ --scenario="${NIGHTLY_SCENARIO:-same-refresh-1080p}"
+              ++ --csv="${OUT_DIR}/frame_times.csv" --scenario="${NIGHTLY_SCENARIO:-same-refresh-1080p}"
 
       - name: "Analyze frame times against the Section 6.1 thresholds"
         run: |

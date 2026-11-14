@@ -18,8 +18,7 @@ is in place; running it needs the benchmark rig.
 
 ```bash
 # L1 + L2 tests, headless (Godot 4.3-stable, gdUnit4 vendored in addons/)
-godot --headless --path . -s -d res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
-    -a test/unit -a test/integration -c --ignoreHeadlessMode
+test/run_tests.sh          # or: GODOT_BIN=/path/to/godot test/run_tests.sh
 ```
 
 ## Layout

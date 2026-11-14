@@ -22,21 +22,31 @@ file with your pull request.
 From the editor: open the project once (this registers the plugins and the
 global classes), then use the gdUnit4 dock to run suites or single tests.
 
-From the command line (what CI runs):
+From the command line (what CI runs, wrapped for local use):
 
 ```bash
 # L1 + L2, headless — the pull-request gate
+test/run_tests.sh                              # defaults to test/unit + test/integration
+test/run_tests.sh -a test/unit                 # a single layer
+GODOT_BIN=/path/to/godot test/run_tests.sh     # if godot is not on PATH
+```
+
+The wrapper runs the same gdUnit4 command-line tool CI runs:
+
+```bash
 godot --headless --path . -s -d res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
     -a test/unit -a test/integration -c --ignoreHeadlessMode
 ```
+
+and adds one guard the tool lacks in v5.1.1: a run that discovers **zero**
+test cases fails instead of exiting green — otherwise a rename that breaks
+every suite's parse would show a passing build while running nothing.
 
 - `-a <dir>` adds a test directory; `-c` continues after failures so one red
   suite does not hide the rest.
 - `--ignoreHeadlessMode` acknowledges that UI/input-pump tests cannot run
   headless. The L1/L2 suites are pure logic behind test seams and are safe
   headless; that is by design (plan Section 3.2).
-- If `godot` is not on PATH: `export GODOT_BIN=/path/to/godot` and use
-  `addons/gdUnit4/runtest.sh` instead.
 
 Benchmark scenes need a display and are never required for ordinary pull
 requests (plan Section 10.1); see *Benchmarks* below.
