@@ -73,7 +73,8 @@ the wrapper directly. The pr pipeline uses the official gdUnit4-action,
 whose internal runner cannot be wrapped, so `pr.yml` verifies the same
 H2/H3 properties against the action's own JUnit XML report in a follow-up
 step. The XML guard's key is `(testsuite/@name, @package)` where `name` is
-the file stem *including* `_test` — verified against the real report
+the file stem *including* `_test`, and each expected suite must carry at
+least one testcase — verified against the real report
 format. The first real GitHub run must still be watched to confirm the
 action's report location matches the guard's glob (no remote is configured
 yet, so this confirmation is outstanding).

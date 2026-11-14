@@ -43,18 +43,23 @@ jobs:
                   for f in files:
                       if f.endswith("_test.gd"):
                           expected[(f[:-len(".gd")], root.replace(os.sep, "/"))] = os.path.join(root, f)
-          ran, cases = set(), 0
+          ran, cases = {}, 0
           reports = glob.glob("reports/**/*.xml", recursive=True)
           for path in reports:
               for ts in ET.parse(path).getroot().iter("testsuite"):
-                  ran.add((ts.get("name"), (ts.get("package") or "").replace(os.sep, "/")))
-                  cases += sum(1 for _ in ts.iter("testcase"))
+                  key = (ts.get("name"), (ts.get("package") or "").replace(os.sep, "/"))
+                  n = sum(1 for _ in ts.iter("testcase"))
+                  ran[key] = max(ran.get(key, 0), n)
+          cases = sum(ran.values())
           print(f"reports: {reports or 'NONE FOUND'}")
           print(f"suites expected {len(expected)}, reported {len(ran)}, test cases {cases}")
           failed = False
           for key, f in sorted(expected.items()):
               if key not in ran:
                   print(f"FAIL: {f} produced no report entry (failed to parse?)", file=sys.stderr)
+                  failed = True
+              elif ran[key] == 0:
+                  print(f"FAIL: {f} reported zero test cases", file=sys.stderr)
                   failed = True
           if cases == 0:
               print("FAIL: zero test cases reported — a green run of nothing", file=sys.stderr)
