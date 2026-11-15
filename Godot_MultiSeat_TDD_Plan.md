@@ -5,7 +5,7 @@
 - Scope: full roadmap — local v0.1 to v1.0 and streaming Phases 1 to 4
 - Test framework: gdUnit4 on Godot 4
 - Audience: maintainers and external contributors
-- Status: Draft v1.2 · 15 November 2026
+- Status: Draft v1.3 · 15 November 2026
 
 ---
 
@@ -170,7 +170,7 @@ Continuous integration is organised around the layer model: the pull-request gat
 | soak | LAN, real clients | L4 session of 2+ hours, logs uploaded | Manual start | Release gate |
 | release | Full matrix | All pipelines + all MS-MAN episodes re-run and recorded | As needed | Release gate |
 
-The pull-request workflow uses the official action with every version pinned: action `@v1.4.2`, Godot 4.3, and `version: installed` so CI exercises the vendored gdUnit4 rather than downloading the latest release, whose newer majors drop support for the pinned Godot baseline. Checkout uses `actions/checkout@v5`, the v4 line running on the now-deprecated Node 20 runtime. The job also grants the publish step an explicit `checks: write` permission; without it the workflow token cannot create the check run, and the pipeline fails after the tests have passed - a constraint the first live run exposed. Input names follow the gdUnit4-action README.
+The pull-request workflow uses the official action with every version pinned: action `@v1.4.2`, Godot 4.3, and `version: installed` so CI exercises the vendored gdUnit4 rather than downloading the latest release, whose newer majors drop support for the pinned Godot baseline. Checkout uses `actions/checkout@v5`, the v4 line running on the now-deprecated Node 20 runtime. The workflow grants its token `contents: read` and `checks: write`; without the write grant the publisher cannot create its check run, and the pipeline fails after the tests have passed - a constraint the first live run (43729843111) exposed. The invocation also passes `--ignoreHeadlessMode`: gdUnit4 v5.x refuses headless execution unless the flag acknowledges it, so a refusal points at a configuration regression rather than a mystery. Input names follow the gdUnit4-action README.
 
 **Listing 2:** Pull-request gate using the official gdUnit4 action
 
@@ -187,8 +187,10 @@ jobs:
         with:
           godot-version: "4.3"
           version: "installed"   # run the vendored gdUnit4, not the latest
-          paths: "res://test/unit,res://test/integration"
+          paths: "test/unit,test/integration"
           headless: true
+          # gdUnit4 v5.x refuses headless runs unless acknowledged
+          arguments: "--ignoreHeadlessMode"
 ```
 
 One property of the runner must be fenced by policy rather than trusted: gdUnit4 exits 0 when no test cases are discovered, so a suite that fails to parse, or a path that matches nothing, is indistinguishable from a pass - and the behaviour persists in current framework releases. Every CI invocation of the runner therefore enforces its own discovery. Direct invocations go through the wrapper `test/run_tests.sh`, which fails when no suite executes or when any `*_test.gd` in the tree is missing from the executed set, naming the offending path. The pr pipeline invokes the action's internal runner directly and cannot be wrapped, so it carries an equivalent follow-up step asserting, against the action's JUnit report, that every `*_test.gd` appears as a suite with at least one testcase. A green badge must mean that tests ran.
