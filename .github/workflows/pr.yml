@@ -5,7 +5,16 @@
 # self-hosted runner (nightly.yml), never here.
 name: tests
 
-on: [push, pull_request]
+# One run per change: push events fire only for main (merge results);
+# pull_request events cover branches. Running both triggers per PR made
+# two same-SHA jobs race in the action's publisher (dorny/test-reporter)
+# — PR #2 lost its pull_request run to that race twice (runs 43748247508/
+# 43748252603: tests green both times, check-run update 404, one dangling
+# in_progress check on the SHA), while every single run passed.
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 # The action publishes its report as a check run, which the default
 # workflow token cannot do (first live run 43729843111 failed exactly
