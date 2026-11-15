@@ -28,7 +28,7 @@ if ! command -v "${GODOT_BIN}" >/dev/null 2>&1; then
 	if [ -x "${GODOT_BIN}" ]; then
 		:   # relative or absolute path works even if not on PATH
 	else
-		echo "godot not found: set GODOT_BIN=/path/to/godot (4.3-stable baseline)." >&2
+		echo "godot not found: set GODOT_BIN=/path/to/godot (4.7.2-stable baseline)." >&2
 		exit 2
 	fi
 fi

@@ -7,7 +7,7 @@
 #
 # Runner requirements (documented in docs/testing.md):
 #   - labels: [self-hosted, gpu, multiseat-displays]
-#   - `godot` (4.3-stable) and `python3` (>= 3.9) on PATH
+#   - `godot` (4.7.2-stable) and `python3` (>= 3.9) on PATH
 #   - both benchmark monitors connected
 name: nightly
 

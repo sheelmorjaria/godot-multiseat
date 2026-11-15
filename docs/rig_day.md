@@ -14,7 +14,7 @@ fallback decision is taken **that day**, not later.
 ## Instrument boundary: why the camera step exists
 
 The benchmark CSV records the process frame loop — one time series, a
-ceiling for every window. Godot 4.3 exposes no per-window present
+ceiling for every window. Godot exposes no per-window present
 timestamps, so uneven *presentation* between windows — the divergence
 the mixed-refresh pair exists to catch — is invisible in the CSV alone.
 The camera frame-counts in steps 1 and 2 are the external witness for
@@ -25,7 +25,7 @@ layer on top of the same evidence.
 
 - [ ] Rig: benchmark GPU idle (no other GPU load), both monitor pairs
       reachable, cable types noted (DisplayPort/HDMI).
-- [ ] `godot --version` prints 4.3.stable; `python3 --version` >= 3.9.
+- [ ] `godot --version` prints 4.7.2.stable; `python3 --version` >= 3.9.
 - [ ] `test/run_tests.sh` exits 0 on the rig machine — the wrapper, never
       an ad-hoc godot invocation (docs/testing.md, the honesty guard).
 - [ ] Single-monitor smoke of the composed scene, honestly labeled — it
