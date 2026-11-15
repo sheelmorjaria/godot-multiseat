@@ -5,7 +5,7 @@
 - Scope: full roadmap — local v0.1 to v1.0 and streaming Phases 1 to 4
 - Test framework: gdUnit4 on Godot 4
 - Audience: maintainers and external contributors
-- Status: Draft v1.1 · 15 November 2026
+- Status: Draft v1.2 · 15 November 2026
 
 ---
 
@@ -170,7 +170,7 @@ Continuous integration is organised around the layer model: the pull-request gat
 | soak | LAN, real clients | L4 session of 2+ hours, logs uploaded | Manual start | Release gate |
 | release | Full matrix | All pipelines + all MS-MAN episodes re-run and recorded | As needed | Release gate |
 
-The pull-request workflow uses the official action with every version pinned: action `@v1.4.2`, Godot 4.3, and `version: installed` so CI exercises the vendored gdUnit4 rather than downloading the latest release, whose newer majors drop support for the pinned Godot baseline. Input names follow the gdUnit4-action README.
+The pull-request workflow uses the official action with every version pinned: action `@v1.4.2`, Godot 4.3, and `version: installed` so CI exercises the vendored gdUnit4 rather than downloading the latest release, whose newer majors drop support for the pinned Godot baseline. Checkout uses `actions/checkout@v5`, the v4 line running on the now-deprecated Node 20 runtime. The job also grants the publish step an explicit `checks: write` permission; without it the workflow token cannot create the check run, and the pipeline fails after the tests have passed - a constraint the first live run exposed. Input names follow the gdUnit4-action README.
 
 **Listing 2:** Pull-request gate using the official gdUnit4 action
 
@@ -182,7 +182,7 @@ jobs:
   unit-and-integration:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: godot-gdunit-labs/gdUnit4-action@v1.4.2
         with:
           godot-version: "4.3"
@@ -530,7 +530,7 @@ Test effort follows risk, and this register is the sequencing argument for the w
 | R6 | Headless server cannot render; streaming needs a separate rendering runtime | Medium | Architecture constraint accepted; Phase 2 build matrix includes the rendering runtime from day one |
 | R7 | Hardware encoder concurrency limits vary by GPU and driver | Medium | MS-STR-005 probe measures instead of assuming; guidance published per reference GPU |
 | R8 | Wi-Fi bandwidth and jitter break streamed seats in real homes | Medium | MS-MAN-004 blind perceptual episode wired vs Wi-Fi; docs declare a wired LAN requirement if warranted |
-| R9 | Test runner exits 0 when no test cases are discovered, so a broken suite or a mistyped path reports green | High | Wrapper `test/run_tests.sh` enforces per-suite discovery on every direct invocation; the pr pipeline cross-checks the action's JUnit report for every `*_test.gd` suite; the first live CI run must confirm the report location (outstanding) |
+| R9 | Test runner exits 0 when no test cases are discovered, so a broken suite or a mistyped path reports green | High | Wrapper `test/run_tests.sh` enforces per-suite discovery on every direct invocation; the pr pipeline cross-checks the action's JUnit report for every `*_test.gd` suite; the first live CI run confirmed the report location (15 November 2026) |
 
 Priorities translate directly into test order: R1 is why the spike is milestone zero, R2 is why the input router refuses keyboards by contract, and R4 is why quality scaling is designed in v0.4 while its measurement starts at v0.2. R9 is why every CI invocation must prove it discovered the suites it claims to have run. Any new risk enters this table through a pull request, under the same evidence rule - R9 itself arrived that way, with the failing scenarios attached.
 
