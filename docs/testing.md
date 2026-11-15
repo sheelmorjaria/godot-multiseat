@@ -182,10 +182,12 @@ delta times to CSV; a plain-Python analyzer applies the thresholds and exits
 non-zero on failure so CI can gate (plan Section 9.1).
 
 ```bash
-# 60 s capture on the benchmark rig (defaults: 60 s, user://frame_times.csv)
-godot --path . res://test/bench/bench_frame_pacing.tscn
+# 60 s two-seat evidence capture on the benchmark rig (composed scene:
+# two windows, two cameras, one shared world, moving actors)
+godot --path . res://test/bench/bench_two_seat.tscn
 
-# Short smoke run with explicit output path and scenario label
+# Tooling smoke only - the bare capture scene measures an empty
+# process loop and is never evidence
 godot --path . res://test/bench/bench_frame_pacing.tscn \
     ++ --csv=test-reports/<build-hash>/frame_times.csv \
     ++ --scenario=same-refresh-1080p --bench-seconds=5
