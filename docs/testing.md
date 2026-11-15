@@ -95,6 +95,19 @@ name (`test/unit/session_test.gd reported zero test cases`) while the
 untouched report from the same run passes — the failure mode R9's
 mitigation requires.
 
+## Branch protection
+
+Plan Section 4.4 is enacted by the repository ruleset `require-tests-check`
+(id 27318778): changes reach `main` only via pull request, and the
+`unit-and-integration` check must pass first — it aggregates the gdUnit
+run and the honesty guard; the publisher's `test-report.xml` check is
+downstream evidence, not the gate. The bypass list is empty, maintainers
+included; the emergency path is a documented ruleset exemption in the PR
+that needs it. `strict_required_status_checks_policy` stays `false` while
+there is a single writer — the hazard it prevents needs `main` to move
+between the check run and the merge — and flips the day a second
+contributor lands or PRs begin stacking within a session.
+
 ## Suite layout and identifiers
 
 | Directory | Layer | Content |
