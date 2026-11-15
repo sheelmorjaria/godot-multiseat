@@ -19,6 +19,12 @@ func create_seat() -> Seat:
 	_seats[seat.id] = seat
 	return seat
 
+func seats() -> Array:
+	return _seats.values()
+
+func get_seat(seat_id: int) -> Seat:
+	return _seats.get(seat_id)
+
 func assign_display(seat_id: int, screen: int) -> bool:
 	if not _display_mapper.claim(seat_id, screen):
 		return false
