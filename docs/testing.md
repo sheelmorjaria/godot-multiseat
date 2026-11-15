@@ -79,6 +79,12 @@ format. The first real GitHub run must still be watched to confirm the
 action's report location matches the guard's glob (no remote is configured
 yet, so this confirmation is outstanding).
 
+Negative-path evidence (2026-11-14): against a doctored report in which
+`session_test` appears with all testcases stripped, the guard fails by
+name (`test/unit/session_test.gd reported zero test cases`) while the
+untouched report from the same run passes — the failure mode R9's
+mitigation requires.
+
 ## Suite layout and identifiers
 
 | Directory | Layer | Content |
