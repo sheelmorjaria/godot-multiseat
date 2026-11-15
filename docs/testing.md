@@ -17,6 +17,24 @@ A fresh clone must run `test/unit` green within ten minutes of cloning
 (plan Section 10.1). If it does not, that is a documentation bug — fix this
 file with your pull request.
 
+## Moving the baseline
+
+The version pin is load-bearing in four places: `project.godot`
+(`config/features`), `pr.yml` (`godot-version`), the vendored
+`addons/gdUnit4/`, and the table above. Moving it is a measured
+procedure, not an edit:
+
+1. Record a full run on the current pin: `test/run_tests.sh` plus the
+   benchmark scene on the standard scenarios (rig hardware).
+2. Repeat on the candidate version — same hardware, same scenarios,
+   same thresholds.
+3. Compare the analyzer output per scenario; a candidate that misses a
+   threshold the current pin meets fails the move.
+4. Record both runs under `test-reports/<build-hash>/`, update the four
+   pins in one pull request, and re-verify the honesty guard if the
+   gdUnit4 version moves with it (the report format is not guaranteed
+   across majors).
+
 ## Running the tests locally
 
 From the editor: open the project once (this registers the plugins and the
@@ -183,6 +201,15 @@ declared in the plan before runs and relaxed only by pull request with
 evidence attached. The full milestone 0 exit procedure — both monitor
 pairs, the episode, and the same-day fallback decision — is the
 [rig-day runbook](rig_day.md).
+
+Instrument boundary, stated plainly: the CSV records the *process* frame
+loop — `_process` deltas, one time series for the whole process. Process
+fps is a ceiling for every window, but uneven presentation *between*
+windows is invisible to it, and Godot 4.3 exposes no per-window present
+timestamps. Per-display presentation is therefore verified externally on
+rig day — a frame count per monitor during the captures (a 240 fps phone
+camera suffices) is compared against the CSV's process average; see the
+runbook's instrument-boundary note.
 
 ## Manual episodes (Track B, MS-MAN-*)
 

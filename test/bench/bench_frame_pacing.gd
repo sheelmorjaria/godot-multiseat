@@ -6,6 +6,12 @@
 # actors — plan Section 9.1), where every child Window is forced to vsync
 # and the process delta is recorded each frame.
 #
+# Instrument boundary: this records the process frame loop — one time
+# series for the whole process, a ceiling for every window. Godot 4.3
+# exposes no per-window present timestamps, so uneven presentation
+# between windows is invisible here; per-display presentation is
+# verified externally on rig day (docs/rig_day.md).
+#
 # User arguments after the `++` separator:
 #   --csv=<path>          output CSV (user://, res:// or absolute);
 #                         default user://frame_times.csv

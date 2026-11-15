@@ -11,6 +11,16 @@ borderless windows on two monitors, each rendering a camera of a shared
 world, at stable frame rates with vsync enabled? If the answer is no, the
 fallback decision is taken **that day**, not later.
 
+## Instrument boundary: why the camera step exists
+
+The benchmark CSV records the process frame loop — one time series, a
+ceiling for every window. Godot 4.3 exposes no per-window present
+timestamps, so uneven *presentation* between windows — the divergence
+the mixed-refresh pair exists to catch — is invisible in the CSV alone.
+The camera frame-counts in steps 1 and 2 are the external witness for
+per-display presentation; MS-MAN-001's perceptual episode is the human
+layer on top of the same evidence.
+
 ## 0. Preflight (~10 min)
 
 - [ ] Rig: benchmark GPU idle (no other GPU load), both monitor pairs
@@ -32,6 +42,10 @@ fallback decision is taken **that day**, not later.
 - [ ] Capture 60 s — the scene default duration; **never** pass
       `--bench-seconds` for an evidence run:
       `godot --path . res://test/bench/bench_frame_pacing.tscn ++ --csv="${OUT}/frame_times_same_refresh.csv" --scenario=same-refresh-1080p`
+- [ ] During the capture, record each display externally: a 240 fps
+      phone camera per screen is enough. Count presented frames per
+      second per display and compare against the CSV's process average —
+      the CSV cannot see uneven presentation between windows; this can.
 - [ ] Gate (exit 0 required; paste the analyzer line into `${OUT}/notes.md`):
       `python3 test/bench/analyze_frame_times.py --csv "${OUT}/frame_times_same_refresh.csv" --label same-refresh-1080p --refresh-hz 60`
       (thresholds default from plan Section 6.1: >= 58 fps average,
@@ -44,6 +58,8 @@ fallback decision is taken **that day**, not later.
       reason the no-fork strategy could fail (plan Section 8).
 - [ ] Capture:
       `godot --path . res://test/bench/bench_frame_pacing.tscn ++ --csv="${OUT}/frame_times_mixed_144_60.csv" --scenario=mixed-144-60`
+- [ ] Same external camera step as MS-BENCH-001, per display — this is
+      the pair where uneven presentation is the failure mode under test.
 - [ ] Analyze with `--refresh-hz 60`: pacing is judged against the slower
       panel; record that choice in the notes. Stutter classification
       (frames > 1.5x refresh) comes from the analyzer output line.
