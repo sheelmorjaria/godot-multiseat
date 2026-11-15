@@ -82,6 +82,13 @@ reports and verified every suite with its testcases. The same run exposed
 one pipeline bug outside the tests: the action's report publisher needs
 `checks: write`, which `pr.yml` now grants.
 
+One precision on what that proves: on the pr pipeline the guard and the
+action's publisher read the same JUnit XML, so their agreement is
+corroboration, not independent confirmation. The independent witness is
+the wrapper's own `Run Test Suite:` accounting over the runner's raw
+console output (H3) — the leg the nightly pipeline carries to non-dev
+hardware.
+
 Negative-path evidence (2026-11-14): against a doctored report in which
 `session_test` appears with all testcases stripped, the guard fails by
 name (`test/unit/session_test.gd reported zero test cases`) while the
