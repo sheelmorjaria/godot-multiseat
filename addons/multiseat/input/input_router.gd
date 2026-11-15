@@ -11,6 +11,11 @@ var _device_to_seat := {}
 func assign_device(seat_id: int, device_id: int) -> void:
 	_device_to_seat[device_id] = seat_id
 
+# Reverse lookup for connection events (MS-IN-004): which seat owns a
+# device, or -1 when no seat ever claimed it.
+func seat_for_device(device_id: int) -> int:
+	return _device_to_seat.get(device_id, -1)
+
 func route(event: InputEvent) -> int:
 	if event is InputEventJoypadButton \
 			or event is InputEventJoypadMotion:

@@ -6,6 +6,10 @@ extends RefCounted
 var id: int
 var display_id := -1
 
+# MS-IN-004: flipped while the seat's controller is disconnected; the
+# device-to-seat binding survives so reconnect restores the seat.
+var controller_lost := false
+
 var _private := {}
 
 func _init(seat_id: int) -> void:
