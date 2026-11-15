@@ -28,6 +28,11 @@ layer on top of the same evidence.
 - [ ] `godot --version` prints 4.3.stable; `python3 --version` >= 3.9.
 - [ ] `test/run_tests.sh` exits 0 on the rig machine — the wrapper, never
       an ad-hoc godot invocation (docs/testing.md, the honesty guard).
+- [ ] Single-monitor smoke of the composed scene, honestly labeled — it
+      should boot one window on the one screen and capture:
+      `godot --path . res://test/bench/bench_two_seat.tscn ++ --scenario=smoke-single-monitor --bench-seconds=5`
+      (a run with fewer screens than seats degrades to bound seats only
+      and says so; the scenario label records what actually rendered).
 - [ ] Record the build and open the evidence directory:
       `BUILD=$(git rev-parse --short=12 HEAD)` and
       `OUT=test-reports/${BUILD}-$(date -u +%Y%m%d-%H%M%S)`; `mkdir -p "${OUT}"`.
@@ -39,9 +44,11 @@ layer on top of the same evidence.
 
 - [ ] Attach the same-refresh pair (both panels 1080p60); confirm in the
       OS display settings; no scaling tricks.
-- [ ] Capture 60 s — the scene default duration; **never** pass
-      `--bench-seconds` for an evidence run:
-      `godot --path . res://test/bench/bench_frame_pacing.tscn ++ --csv="${OUT}/frame_times_same_refresh.csv" --scenario=same-refresh-1080p`
+- [ ] Capture 60 s with the **composed two-seat scene** — the bare
+      capture scene is for tooling smokes only and measures an empty
+      process loop; evidence runs need the two-window load under test.
+      Never pass `--bench-seconds` for an evidence run:
+      `godot --path . res://test/bench/bench_two_seat.tscn ++ --csv="${OUT}/frame_times_same_refresh.csv" --scenario=same-refresh-1080p`
 - [ ] During the capture, record each display externally: a 240 fps
       phone camera per screen is enough. Count presented frames per
       second per display and compare against the CSV's process average —
@@ -56,8 +63,8 @@ layer on top of the same evidence.
 - [ ] Swap to the mixed pair. Record panel models and connection types in
       `${OUT}/notes.md` — mixed-refresh vsync is risk R1, the most likely
       reason the no-fork strategy could fail (plan Section 8).
-- [ ] Capture:
-      `godot --path . res://test/bench/bench_frame_pacing.tscn ++ --csv="${OUT}/frame_times_mixed_144_60.csv" --scenario=mixed-144-60`
+- [ ] Capture (composed two-seat scene, as MS-BENCH-001):
+      `godot --path . res://test/bench/bench_two_seat.tscn ++ --csv="${OUT}/frame_times_mixed_144_60.csv" --scenario=mixed-144-60`
 - [ ] Same external camera step as MS-BENCH-001, per display — this is
       the pair where uneven presentation is the failure mode under test.
 - [ ] Analyze with `--refresh-hz 60`: pacing is judged against the slower
