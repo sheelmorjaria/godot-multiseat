@@ -9,8 +9,8 @@ If anything here and the plan disagree, the plan wins — file an issue.
 
 | Component | Version | Where |
 | --- | --- | --- |
-| Godot | 4.3-stable | any build; CI uses the official Linux binary |
-| Test framework | gdUnit4 v5.1.1 | vendored at `addons/gdUnit4/` (no download needed) |
+| Godot | 4.7.2-stable | any build; CI uses the official Linux binary |
+| Test framework | gdUnit4 v6.2.3 | vendored at `addons/gdUnit4/` (no download needed) |
 | Python (benchmarks only) | >= 3.9, stdlib only | for `test/bench/analyze_frame_times.py` |
 
 A fresh clone must run `test/unit` green within ten minutes of cloning
@@ -58,7 +58,7 @@ godot --headless --path . -s res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
 
 (no `-d`: the debug flag makes the script debugger break on parse errors
 and wait for stdin that never arrives in CI, hanging the run), and adds
-the honesty contract the tool lacks in v5.1.1 — see below.
+the honesty contract the tool still partially lacks in v6.2.3 — see below.
 
 - `-a <dir>` adds a test directory; `-c` continues after failures so one red
   suite does not hide the rest.
@@ -71,11 +71,13 @@ requests (plan Section 10.1); see *Benchmarks* below.
 
 ## The honesty guard
 
-gdUnit4 v5.1.1 — and upstream still, as reported against 6.2.1 — exits 0
-when a run discovers no test cases, for example when suites fail to parse.
-A green badge can therefore hide a run of nothing, and the plan's
-red-test-on-main workflow (Section 4.4) would be invisible. `test/run_tests.sh`
-enforces the contract:
+gdUnit4 v5.1.1 exited 0 whenever a run discovered no test cases. On the
+v6.2.3 baseline the defect is half-fixed upstream, verified 2026-11-15:
+discovery-time script errors abort with a non-zero exit (105, "Script
+errors were detected during test discovery"), but a `-a` path matching
+nothing still exits 0 — a green badge can still hide a run of nothing,
+and the plan's red-test-on-main workflow (Section 4.4) still needs the
+guard. `test/run_tests.sh` enforces the contract:
 
 - **H1** the tool's own exit code is honoured;
 - **H2** zero discovered test cases fails the run;
@@ -207,8 +209,9 @@ pairs, the episode, and the same-day fallback decision — is the
 Instrument boundary, stated plainly: the CSV records the *process* frame
 loop — `_process` deltas, one time series for the whole process. Process
 fps is a ceiling for every window, but uneven presentation *between*
-windows is invisible to it, and Godot 4.3 exposes no per-window present
-timestamps. Per-display presentation is therefore verified externally on
+windows is invisible to it, and the engine's display server exposes no
+per-window present timestamps (probed on the 4.7.2 baseline: no
+present/frame methods at all). Per-display presentation is therefore verified externally on
 rig day — a frame count per monitor during the captures (a 240 fps phone
 camera suffices) is compared against the CSV's process average; see the
 runbook's instrument-boundary note.

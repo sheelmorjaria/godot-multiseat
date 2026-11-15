@@ -8,7 +8,7 @@ config_version=5
 
 config/name="Godot MultiSeat"
 config/description="Local multi-seat and streaming framework for Godot 4: several players share one authoritative world while each keeps an independent display, controller, HUD and private information."
-config/features=PackedStringArray("4.3")
+config/features=PackedStringArray("4.7")
 
 [editor_plugins]
 

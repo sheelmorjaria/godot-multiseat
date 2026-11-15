@@ -18,7 +18,7 @@ is in place; running it needs the benchmark rig.
 ## Quick start
 
 ```bash
-# L1 + L2 tests, headless (Godot 4.3-stable, gdUnit4 vendored in addons/)
+# L1 + L2 tests, headless (Godot 4.7.2-stable, gdUnit4 vendored in addons/)
 test/run_tests.sh          # or: GODOT_BIN=/path/to/godot test/run_tests.sh
 ```
 
@@ -26,7 +26,7 @@ test/run_tests.sh          # or: GODOT_BIN=/path/to/godot test/run_tests.sh
 
 ```text
 addons/multiseat/   the framework addon (core, display, input, privacy)
-addons/gdUnit4/     vendored test framework (v5.1.1)
+addons/gdUnit4/     vendored test framework (v6.2.3)
 test/unit/          L1 headless unit tests
 test/integration/   L2 headless integration tests
 test/bench/         L3 frame-pacing benchmark scene + CSV analyzer

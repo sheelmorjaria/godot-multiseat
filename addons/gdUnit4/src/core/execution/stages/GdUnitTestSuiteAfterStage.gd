@@ -12,6 +12,8 @@ func _execute(context :GdUnitExecutionContext) -> void:
 
 	@warning_ignore("redundant_await")
 	await test_suite.after()
+	context.restore_project_settings()
+
 	await context.gc(GdUnitExecutionContext.GC_ORPHANS_CHECK.SUITE_HOOK_AFTER)
 
 	var reports := context.collect_reports(false)
@@ -23,6 +25,7 @@ func _execute(context :GdUnitExecutionContext) -> void:
 			reports))
 	GdUnitFileAccess.clear_tmp()
 	# Guard that checks if all doubled (spy/mock) objects are released
-	GdUnitClassDoubler.check_leaked_instances()
+	await GdUnitClassDoubler.check_leaked_instances()
 	# we hide the scene/main window after runner is finished
-	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
+	if not Engine.is_embedded_in_editor():
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
