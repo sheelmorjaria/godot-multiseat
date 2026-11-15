@@ -75,9 +75,12 @@ H2/H3 properties against the action's own JUnit XML report in a follow-up
 step. The XML guard's key is `(testsuite/@name, @package)` where `name` is
 the file stem *including* `_test`, and each expected suite must carry at
 least one testcase — verified against the real report
-format. The first real GitHub run must still be watched to confirm the
-action's report location matches the guard's glob (no remote is configured
-yet, so this confirmation is outstanding).
+format. Confirmed live 2026-11-15 (run 43729843111 on the first push to
+main): all suites passed on GitHub's clean runner — `version: installed`
+resolved the vendored gdUnit4, and the guard's glob found the action's
+reports and verified every suite with its testcases. The same run exposed
+one pipeline bug outside the tests: the action's report publisher needs
+`checks: write`, which `pr.yml` now grants.
 
 Negative-path evidence (2026-11-14): against a doctored report in which
 `session_test` appears with all testcases stripped, the guard fails by

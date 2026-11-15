@@ -74,10 +74,10 @@ fallback decision is taken **that day**, not later.
 
 - [ ] Commit `${OUT}`: CSVs are evidence and are never regenerated
       (test-reports/README.md).
-- [ ] Push and watch the first real `pr` and `nightly` runs: confirm the
-      action's report step and the honesty guard agree
-      (docs/testing.md — this confirmation is outstanding until a remote
-      exists).
+- [ ] Push and confirm the `tests` workflow is green on the pushed commit.
+      (The first-run confirmation — the action's report location matching
+      the honesty guard's glob, and the guard agreeing with the action's
+      own results — was done 2026-11-15, run 43729843111.)
 
 On a full pass, milestone 0 exits and the v0.1 framework work proceeds
 with the multi-window architecture confirmed; the traceability matrix and

@@ -21,7 +21,7 @@ jobs:
     runs-on: [self-hosted, gpu, multiseat-displays]
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Every CI invocation of gdUnit4 runs behind the honesty contract in
       # test/run_tests.sh (docs/testing.md). This also catches runner-class
